@@ -2,8 +2,16 @@
 
 This example shows how a GPU-level fault (NVIDIA **Xid** event) propagates up
 the stack and surfaces to the user as a Ray *application-level* failure, and
-how adding **AKS Node Problem Detector (NPD)** with Xid rules + a small
-correlator turns the same failure into a clear hardware-level root cause.
+how adding **AKS Node Problem Detector (NPD)** with Xid rules plus a small
+stand-alone correlator script turns the same failure into a clear
+hardware-level root cause.
+
+> **Status:** today this is a prototype that runs **outside** of KubeRay:
+> NPD publishes node events; a Python script (run on demand or as a sidecar)
+> joins those events to a failed Ray job. There is no upstream KubeRay
+> change required to use it. A possible upstream design that would build
+> the same join into the operator itself is sketched in
+> [FUTURE_WORK.md](FUTURE_WORK.md).
 
 The local simulator [simulate_xid_to_ray.py](simulate_xid_to_ray.py) models
 every layer (GPU driver, kernel log, NPD, kube API, Ray worker, correlator)
@@ -464,6 +472,8 @@ az group delete -n "$RG" --yes --no-wait
 | `kubectl describe node` conditions    | `KubeAPI.node_conditions`                        |
 | `kubectl get events`                  | `KubeAPI.events`                                 |
 | Ray worker raising `RayTaskError`     | `RayWorker.run_task()`                           |
-| Operator/sidecar joining the two      | `XidCorrelator.explain()`                        |
+| Stand-alone correlator script         | `XidCorrelator.explain()`                        |
 
 The simulator is the spec; the AKS steps above are the real-world wiring.
+For what an upstream KubeRay-native version of the correlator could look
+like, see [FUTURE_WORK.md](FUTURE_WORK.md).

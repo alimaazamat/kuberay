@@ -527,14 +527,18 @@ def main() -> None:
                  correlator reports 'GPU/HARDWARE ROOT CAUSE' with the
                  specific Xid code -- no human triage needed.
 
-            For a real KubeRay deployment on AKS, the equivalent pieces are:
+            For a real KubeRay deployment on AKS today, the equivalent
+            pieces are:
 
               * AKS NPD DaemonSet with a kernel-monitor rule for
                 'NVRM: Xid \\\\(PCI:[^)]+\\\\): (\\\\d+),' setting
                 NodeCondition GPUHealthy=False and a Warning event.
-              * A controller / sidecar that, on RayJob/RayCluster failure,
-                pulls Events for the pod's node within +/- 30s and
-                annotates the RayJob status with the matched Xid.
+              * A stand-alone correlator script (see correlate.py in the
+                README) that, given a failed RayJob, lists Events on the
+                pod's node within +/- 30s and prints the matched Xid.
+
+            See FUTURE_WORK.md for a sketch of how this could be folded
+            into the KubeRay operator itself.
             """
         ).strip()
     )
